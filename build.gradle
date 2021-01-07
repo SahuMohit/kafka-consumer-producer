@@ -1,0 +1,84 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'kotlin'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+buildscript {
+    ext.kotlin_version = '1.3.61'
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.commercehub.gradle.plugin:gradle-avro-plugin:0.10.0"
+
+    }
+}
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+
+
+repositories {
+    mavenCentral()
+    maven { url "https://packages.confluent.io/maven/" }
+    jcenter()
+}
+ext {
+    kafkaVersion = '2.4.0'
+    confluentVersion = '4.0.0'
+}
+dependencies {
+    compile "org.apache.kafka:kafka-clients:$kafkaVersion"
+    compile "io.confluent:kafka-avro-serializer:$confluentVersion"
+    compile "io.confluent:kafka-schema-registry:$confluentVersion"
+
+    compile "org.apache.avro:avro:1.8.1"
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task renewAvro {
+    doLast {
+        delete "src/main/java/models"
+        copy {
+            from "build/avro/models"
+            into "src/main/java/models"
+        }
+    }
+}
+
+task generateAvro(type: com.commercehub.gradle.plugin.avro.GenerateAvroJavaTask) {
+    source("src/main/java/avscs")
+    include("**/**/**/**/*.avsc")
+    outputDir = file("build/avro")
+}
+
+
+renewAvro.dependsOn generateAvro
+build.dependsOn renewAvro
+
