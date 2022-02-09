@@ -30,7 +30,7 @@ class NotificationConsumer(
                     while (iterator.hasNext()) {
                         val currentRecord = iterator.next()
                         try {
-                            println("Record ${currentRecord.value()}")
+                            println("Record ${currentRecord.value()} ,$currentRecord.")
                         } catch (e: Exception) {
                             println("Error in consumer KEY: ${currentRecord.key()} VALUE: ${currentRecord.value()} OFFSET: ${currentRecord.offset()} PARTITION: ${currentRecord.partition()} ")
                         } finally {

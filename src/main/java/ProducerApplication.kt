@@ -5,17 +5,15 @@ import java.util.*
 fun main() {
     val schemaRegistryURL = "http://0.0.0.0:8081"
     val bootstrapURL = "localhost:9092"
-    val topicName = "notification"
+    val topicName = "inventoryTopic"
 
     val producer = NotificationProducer(topicName, bootstrapURL, schemaRegistryURL)
-    getNotifications().forEach { n ->
-       val future = producer.produceNotification(n.getUuid(), n)
-       val recordMetadata = future.get()
-       println("Record Produced offset ${recordMetadata.offset()}, partition ${recordMetadata.partition()}")
-
+    while (true) {
+        val future = producer.produceBulkNotifications(values = getNotifications())
+        val recordMetadata = future?.get()
+        println("Bulk Records Produced, last offset ${recordMetadata?.offset()}, partition ${recordMetadata?.partition()}")
+        Thread.sleep(2000L)
     }
-
-
 }
 
 
